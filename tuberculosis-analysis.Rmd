@@ -1,0 +1,37 @@
+---
+title: "Tuberculosis analysis"
+author: "Łukasz Pięta"
+date: "11/2/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+### Libraries
+
+```{r setup}
+# TODO
+```
+
+### Read data
+
+```{r read_data}
+# TODO
+```
+
+### Data summary
+
+```{r data_summary}
+# TODO
+```
+
+### Tuberculosis cases grouped by age
+
+```{r plot_age}
+# TODO
+```
+
+### Tuberculosis cases grouped by age and country
+
+```{r plot_age_country}
+# TODO
+```

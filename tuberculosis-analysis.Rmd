@@ -7,33 +7,37 @@ output:
     keep_md: yes
     df_print: kable
     code_folding: "hide"
+    toc: true
+    toc_float: true
 ---
-### Libraries
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
 
+### Libraries
 ```{r libraries,message=FALSE}
 library(dplyr)
 library(knitr)
-#install.packages("ggplot2", dependencies = TRUE)
 library(ggplot2)
-#devtools::install_github("rstudio/EDAWR")
+library(reshape2)
 library(EDAWR)
 ```
 
 ### Read data
 ```{r read_data,cache=TRUE}
-original_data <- tb
+df <- tb
 ```
 
 ### Data summary
 
 ```{r data_summary}
-kable(summary(original_data))
+kable(summary(df))
 ```
 
-### Tuberculosis cases grouped by sex
+### Tuberculosis cases grouped by gender
 
 ```{r group_by_sex_summary,message=FALSE}
-group_by_sex_summary <- original_data %>%
+group_by_sex_summary <- df %>%
     filter(!is.na(child) & !is.na(adult) & !is.na(elderly)) %>%
     mutate(all=child + adult + elderly) %>%
     group_by(sex) %>%
@@ -45,16 +49,49 @@ kable(group_by_sex_summary)
 ### Tuberculosis cases grouped by age
 
 ```{r plot_age,message=FALSE}
-tb %>%
+gruped_by_age_and_year <- df %>%
     filter(!is.na(child) & !is.na(adult) & !is.na(elderly)) %>%
     group_by(year) %>%
-    summarise(child_cases = sum(child), adult_cases = sum(adult), elderly_cases = sum(elderly)) %>%
-    mutate(child_cases = child_cases / 1000) %>%
-    select(year, child_cases) %>% plot(type="b")
+    summarise(child_cases = sum(child) / 1000, adult_cases = sum(adult) / 1000, elderly_cases = sum(elderly) / 1000)
+
+ d <- melt(gruped_by_age_and_year, id.vars="year")
+ 
+ggplot(d, aes(year,value, col=variable)) + 
+    geom_line() +
+    labs(x = "Year", y = "Cases [thousands]", color = "Legend") +
+    theme_linedraw() +
+    scale_x_continuous(breaks = seq(min(d$year), max(d$year), by = 2))
+
 ```
 
 ### Tuberculosis cases grouped by age and country
 
-```{r plot_age_country}
-# TODO
+```{r plot_age_country_func}
+single_graph <- function(df, group) {
+  melted <- melt(df, id.vars="year")
+  
+  print(ggplot(melted, aes(year,value, col=variable)) + 
+    geom_line() +
+    labs(x = "Year", y = "Cases", color = "Legend") +
+    ggtitle(group$country[1]) +
+    theme_linedraw() +
+    scale_x_continuous(breaks = seq(min(df$year), max(df$year), by = 2))
+  )
+}
+
 ```
+
+
+
+```{r plot_age_country}
+grouped_by_age_country_year <- df %>%
+    filter(!is.na(child) & !is.na(adult) & !is.na(elderly)) %>%
+    group_by(country, year) %>%
+    summarise(child_cases = sum(child), adult_cases = sum(adult), elderly_cases = sum(elderly)) %>%
+    group_by(country) 
+
+    invisible(group_map(grouped_by_age_country_year,single_graph))
+```
+
+
+
